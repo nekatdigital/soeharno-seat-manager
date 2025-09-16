@@ -47,6 +47,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Restaurant theme colors
+        'ocean-teal': "hsl(var(--ocean-teal))",
+        'coral-orange': "hsl(var(--coral-orange))",
+        'seafoam-green': "hsl(var(--seafoam-green))",
+        'warm-sand': "hsl(var(--warm-sand))",
+        'deep-water': "hsl(var(--deep-water))",
+        // Table status colors
+        'table-empty': "hsl(var(--table-empty))",
+        'table-occupied': "hsl(var(--table-occupied))",
+        'table-reserved': "hsl(var(--table-reserved))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
