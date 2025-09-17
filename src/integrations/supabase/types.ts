@@ -14,7 +14,197 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      menu_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      restaurant_tables: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          customer_name: string | null
+          id: string
+          occupied_since: string | null
+          reservation_time: string | null
+          status: string | null
+          table_number: number
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          occupied_since?: string | null
+          reservation_time?: string | null
+          status?: string | null
+          table_number: number
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          occupied_since?: string | null
+          reservation_time?: string | null
+          status?: string | null
+          table_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transaction_items: {
+        Row: {
+          created_at: string
+          id: string
+          menu_item_id: string | null
+          notes: string | null
+          quantity: number
+          total_price: number
+          transaction_id: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          menu_item_id?: string | null
+          notes?: string | null
+          quantity: number
+          total_price: number
+          transaction_id?: string | null
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          menu_item_id?: string | null
+          notes?: string | null
+          quantity?: number
+          total_price?: number
+          transaction_id?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_items_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_items_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          id: string
+          payment_method: string | null
+          status: string | null
+          table_id: string | null
+          total_amount: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          payment_method?: string | null
+          status?: string | null
+          table_id?: string | null
+          total_amount: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          payment_method?: string | null
+          status?: string | null
+          table_id?: string | null
+          total_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          role: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          role?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          role?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
