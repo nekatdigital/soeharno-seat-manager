@@ -60,11 +60,19 @@ const Index = () => {
   };
 
   const handleTransactionComplete = (transaction: any) => {
-    // Update table status to occupied
-    setTables(prev => 
-      prev.map(table => 
-        table.id === selectedTable?.id 
-          ? { ...table, status: 'occupied' as TableStatus, customerName: transaction.customerName, occupiedSince: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }
+    // Update table status to occupied and clear reservation fields
+    setTables(prev =>
+      prev.map(table =>
+        table.id === selectedTable?.id
+          ? {
+              ...table,
+              status: 'occupied' as TableStatus,
+              customerName: transaction.customerName,
+              occupiedSince: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+              reservationDate: undefined,
+              reservationTime: undefined,
+              reservationPeople: undefined,
+            }
           : table
       )
     );
