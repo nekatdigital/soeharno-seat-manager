@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 // @ts-expect-error Vite raw import for text
 import schemaSQL from "@/sql/schema.sql?raw";
+import { exportSQL, exportPsqlScript } from "@/lib/export/sqlExporter";
 
 export const Settings = () => {
   const { toast } = useToast();
