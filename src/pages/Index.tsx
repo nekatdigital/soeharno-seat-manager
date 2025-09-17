@@ -3,6 +3,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { TableMap, Table, TableStatus } from "@/components/dashboard/TableMap";
+import { TableManager } from "@/components/tables/TableManager";
+import { TableActions } from "@/components/tables/TableActions";
 import { TransactionForm } from "@/components/transactions/TransactionForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,8 @@ const Index = () => {
   const [username, setUsername] = useState('');
   const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [actionTable, setActionTable] = useState<Table | null>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toast } = useToast();
 
@@ -51,14 +55,8 @@ const Index = () => {
   };
 
   const handleTableClick = (table: Table) => {
-    if (table.status === 'empty') {
-      setSelectedTable(table);
-    } else {
-      toast({
-        title: "Informasi Meja",
-        description: `Meja ${table.number} - ${table.status === 'occupied' ? 'Terisi' : 'Reservasi'} oleh ${table.customerName}`,
-      });
-    }
+    setActionTable(table);
+    setActionsOpen(true);
   };
 
   const handleTransactionComplete = (transaction: any) => {
@@ -89,6 +87,24 @@ const Index = () => {
   }, [tables]);
 
   const occupiedTables = tables.filter(t => t.status === 'occupied').length;
+
+  const updateTable = (updated: Table) => {
+    setTables(prev => prev.map(t => (t.id === updated.id ? updated : t)));
+  };
+
+  const startTransaction = (t: Table) => {
+    setSelectedTable(t);
+  };
+
+  const finishAndEmpty = (t: Table) => {
+    const cleared: Table = { ...t, status: 'empty' as TableStatus };
+    delete (cleared as any).customerName;
+    delete (cleared as any).reservationDate;
+    delete (cleared as any).reservationTime;
+    delete (cleared as any).reservationPeople;
+    delete (cleared as any).occupiedSince;
+    updateTable(cleared);
+  };
   const totalRevenue = 2450000; // Demo data
   const todayTransactions = 23; // Demo data
 
@@ -172,6 +188,7 @@ const Index = () => {
         return (
           <div className="space-y-6">
             <h1 className="text-3xl font-bold text-deep-water">Manajemen Meja</h1>
+            <TableManager tables={tables} onChange={setTables} />
             <TableMap tables={tables} onTableClick={handleTableClick} />
           </div>
         );
@@ -208,8 +225,17 @@ const Index = () => {
         {renderContent()}
       </main>
 
+      <TableActions
+        table={actionTable}
+        open={actionsOpen}
+        onOpenChange={setActionsOpen}
+        onUpdate={updateTable}
+        onStartTransaction={startTransaction}
+        onEmpty={finishAndEmpty}
+      />
+
       {selectedTable && (
-        <TransactionForm 
+        <TransactionForm
           table={selectedTable}
           onClose={() => setSelectedTable(null)}
           onComplete={handleTransactionComplete}
