@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import restaurantHero from "@/assets/restaurant-hero.jpg";
 import { BarChart3, Clock, Fish, TrendingUp } from "lucide-react";
+import { Settings as SettingsPage } from "@/components/settings/Settings";
+import { SimpleDB } from "@/lib/storage/simpledb";
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -20,7 +22,7 @@ const Index = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toast } = useToast();
 
-  // Demo data
+  // Demo data (akan ditimpa dari IndexedDB jika tersedia)
   const [tables, setTables] = useState<Table[]>([
     { id: '1', number: 1, capacity: 4, status: 'empty' },
     { id: '2', number: 2, capacity: 6, status: 'occupied', customerName: 'Budi Santoso', occupiedSince: '14:30' },
@@ -70,6 +72,21 @@ const Index = () => {
     );
     setSelectedTable(null);
   };
+
+  useEffect(() => {
+    const db = new SimpleDB("appDB", 1);
+    (async () => {
+      const saved = await db.get<Table[]>("tables");
+      if (saved && Array.isArray(saved)) {
+        setTables(saved);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const db = new SimpleDB("appDB", 1);
+    db.set("tables", tables).catch(() => void 0);
+  }, [tables]);
 
   const occupiedTables = tables.filter(t => t.status === 'occupied').length;
   const totalRevenue = 2450000; // Demo data
@@ -156,6 +173,14 @@ const Index = () => {
           <div className="space-y-6">
             <h1 className="text-3xl font-bold text-deep-water">Manajemen Meja</h1>
             <TableMap tables={tables} onTableClick={handleTableClick} />
+          </div>
+        );
+
+      case 'settings':
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-deep-water">Pengaturan</h1>
+            <SettingsPage />
           </div>
         );
 
