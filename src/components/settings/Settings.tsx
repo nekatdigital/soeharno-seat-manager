@@ -99,6 +99,35 @@ export const Settings = () => {
               Salin SQL Schema
             </Button>
           </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <Button type="button" onClick={async () => {
+              const dump = await exportSQL(true);
+              await navigator.clipboard.writeText(dump);
+              toast({ title: "SQL Dump disalin" });
+            }}>
+              Ekstrak Database (SQL)
+            </Button>
+            <Button type="button" variant="outline" onClick={async () => {
+              const dump = await exportSQL(true);
+              const blob = new Blob([dump], { type: "text/sql;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "export.sql";
+              a.click();
+              URL.revokeObjectURL(url);
+              toast({ title: "File diunduh", description: "export.sql" });
+            }}>
+              Download SQL
+            </Button>
+            <Button type="button" variant="secondary" onClick={async () => {
+              const script = await exportPsqlScript(neonConn || undefined);
+              await navigator.clipboard.writeText(script);
+              toast({ title: "Script psql + data disalin" });
+            }}>
+              Salin Script psql + Data
+            </Button>
+          </div>
           <div className="space-y-2">
             <Label>SQL Schema</Label>
             <Textarea className="min-h-[200px] font-mono" value={schemaSQL as string} readOnly />
