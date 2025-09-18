@@ -243,6 +243,11 @@ const Index = () => {
           </div>
         );
 
+      case 'reports':
+        return (
+          <ReportsPage transactions={transactions} />
+        );
+
       case 'users':
         return (
           <div className="space-y-6">
