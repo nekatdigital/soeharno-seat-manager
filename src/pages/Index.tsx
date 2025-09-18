@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import restaurantHero from "@/assets/restaurant-hero.jpg";
 import { BarChart3, Clock, Fish, TrendingUp } from "lucide-react";
-import { TransactionsPage } from "@/components/transactions/TransactionsPage";
+import { TransactionsPage, type TransactionRecord } from "@/components/transactions/TransactionsPage";
 import { Settings as SettingsPage } from "@/components/settings/Settings";
 import { SimpleDB } from "@/lib/storage/simpledb";
 
@@ -24,7 +24,7 @@ const Index = () => {
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [actionTable, setActionTable] = useState<Table | null>(null);
   const [actionsOpen, setActionsOpen] = useState(false);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toast } = useToast();
 
@@ -79,7 +79,7 @@ const Index = () => {
       )
     );
 
-    const record = {
+    const record: TransactionRecord = {
       ...transaction,
       id: transaction.id || Date.now().toString(),
       kind: 'dine_in',
@@ -87,6 +87,7 @@ const Index = () => {
       timestamp: new Date().toISOString(),
       status: 'pending',
       paymentMethod: null,
+      operatorRole: userRole,
     };
     setTransactions(prev => [record, ...prev]);
 
@@ -226,7 +227,7 @@ const Index = () => {
             <TransactionsPage
               transactions={transactions}
               onUpdate={(tx) => setTransactions(prev => prev.map(t => t.id === tx.id ? tx : t))}
-              onAdd={(tx) => setTransactions(prev => [tx, ...prev])}
+              onAdd={(tx) => setTransactions(prev => [{ ...tx, operatorRole: userRole }, ...prev])}
             />
           </div>
         );
