@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import restaurantHero from "@/assets/restaurant-hero.jpg";
 import { BarChart3, Clock, Fish, TrendingUp } from "lucide-react";
+import { TransactionsPage } from "@/components/transactions/TransactionsPage";
 import { Settings as SettingsPage } from "@/components/settings/Settings";
 import { SimpleDB } from "@/lib/storage/simpledb";
 
@@ -23,6 +24,7 @@ const Index = () => {
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [actionTable, setActionTable] = useState<Table | null>(null);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toast } = useToast();
 
@@ -76,16 +78,28 @@ const Index = () => {
           : table
       )
     );
+
+    const record = {
+      ...transaction,
+      id: transaction.id || Date.now().toString(),
+      kind: 'dine_in',
+      tableNumber: selectedTable?.number,
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+      paymentMethod: null,
+    };
+    setTransactions(prev => [record, ...prev]);
+
     setSelectedTable(null);
   };
 
   useEffect(() => {
     const db = new SimpleDB("appDB", 1);
     (async () => {
-      const saved = await db.get<Table[]>("tables");
-      if (saved && Array.isArray(saved)) {
-        setTables(saved);
-      }
+      const savedTables = await db.get<Table[]>("tables");
+      if (savedTables && Array.isArray(savedTables)) setTables(savedTables);
+      const savedTx = await db.get<any[]>("transactions");
+      if (savedTx && Array.isArray(savedTx)) setTransactions(savedTx);
     })();
   }, []);
 
@@ -93,6 +107,11 @@ const Index = () => {
     const db = new SimpleDB("appDB", 1);
     db.set("tables", tables).catch(() => void 0);
   }, [tables]);
+
+  useEffect(() => {
+    const db = new SimpleDB("appDB", 1);
+    db.set("transactions", transactions).catch(() => void 0);
+  }, [transactions]);
 
   const occupiedTables = tables.filter(t => t.status === 'occupied').length;
 
@@ -198,6 +217,17 @@ const Index = () => {
             <h1 className="text-3xl font-bold text-deep-water">Manajemen Meja</h1>
             <TableManager tables={tables} onChange={setTables} />
             <TableMap tables={tables} onTableClick={handleTableClick} />
+          </div>
+        );
+
+      case 'transactions':
+        return (
+          <div className="space-y-6">
+            <TransactionsPage
+              transactions={transactions}
+              onUpdate={(tx) => setTransactions(prev => prev.map(t => t.id === tx.id ? tx : t))}
+              onAdd={(tx) => setTransactions(prev => [tx, ...prev])}
+            />
           </div>
         );
 
