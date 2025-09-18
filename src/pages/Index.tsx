@@ -15,6 +15,7 @@ import { BarChart3, Clock, Fish, TrendingUp } from "lucide-react";
 import { TransactionsPage, type TransactionRecord } from "@/components/transactions/TransactionsPage";
 import { Settings as SettingsPage } from "@/components/settings/Settings";
 import { MenuManager } from "@/components/menu/MenuManager";
+import { ReportsPage } from "@/components/reports/ReportsPage";
 import { SimpleDB } from "@/lib/storage/simpledb";
 import { UserManager } from "@/components/users/UserManager";
 
