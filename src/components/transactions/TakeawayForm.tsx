@@ -9,34 +9,20 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus, Receipt, X } from "lucide-react";
 import type { TransactionRecord } from "@/components/transactions/TransactionsPage";
 
-interface MenuItem {
-  id: string;
-  name: string;
-  price: number;
-  category: 'makanan' | 'minuman' | 'paket_mancing';
-}
+import type { MenuItem } from "@/lib/menu/types";
+import { getMenuItems } from "@/lib/menu/storage";
+import { demoMenu } from "@/lib/menu/demo";
 
 interface OrderItem { menuItem: MenuItem; quantity: number; }
-
-const demoMenu: MenuItem[] = [
-  { id: '1', name: 'Nasi Gudeg', price: 25000, category: 'makanan' },
-  { id: '2', name: 'Ayam Bakar', price: 35000, category: 'makanan' },
-  { id: '3', name: 'Pecel Lele', price: 20000, category: 'makanan' },
-  { id: '4', name: 'Ikan Bakar', price: 45000, category: 'makanan' },
-  { id: '5', name: 'Es Teh Manis', price: 8000, category: 'minuman' },
-  { id: '6', name: 'Es Jeruk', price: 10000, category: 'minuman' },
-  { id: '7', name: 'Kopi Tubruk', price: 12000, category: 'minuman' },
-  { id: '8', name: 'Paket Mancing 1 Jam', price: 15000, category: 'paket_mancing' },
-  { id: '9', name: 'Paket Mancing 3 Jam', price: 40000, category: 'paket_mancing' },
-];
 
 export const TakeawayForm = ({ onClose, onComplete }: { onClose: () => void; onComplete: (tx: TransactionRecord) => void; }) => {
   const [customerName, setCustomerName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [menu, setMenu] = useState<MenuItem[]>(demoMenu);
   const { toast } = useToast();
 
-  const filteredMenu = selectedCategory === "all" ? demoMenu : demoMenu.filter(item => item.category === selectedCategory);
+  const filteredMenu = selectedCategory === "all" ? menu.filter(i => i.is_active !== false) : menu.filter(item => item.category === selectedCategory && item.is_active !== false);
 
   const addToOrder = (menuItem: MenuItem) => {
     const existingItem = orderItems.find(item => item.menuItem.id === menuItem.id);
@@ -86,6 +72,16 @@ export const TakeawayForm = ({ onClose, onComplete }: { onClose: () => void; onC
     onComplete(tx);
     toast({ title: "Transaksi takeaway dibuat", description: `Pesanan untuk ${customerName}` });
   };
+
+  // load managed menu
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useState(() => {
+    (async () => {
+      const items = await getMenuItems();
+      if (items && items.length) setMenu(items);
+    })();
+    return undefined;
+  });
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
