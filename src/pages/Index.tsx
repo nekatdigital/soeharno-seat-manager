@@ -233,6 +233,14 @@ const Index = () => {
           </div>
         );
 
+      case 'menu':
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-deep-water">Kelola Menu</h1>
+            <MenuManager />
+          </div>
+        );
+
       case 'settings':
         return (
           <div className="space-y-6">
