@@ -14,6 +14,7 @@ import restaurantHero from "@/assets/restaurant-hero.jpg";
 import { BarChart3, Clock, Fish, TrendingUp } from "lucide-react";
 import { TransactionsPage, type TransactionRecord } from "@/components/transactions/TransactionsPage";
 import { Settings as SettingsPage } from "@/components/settings/Settings";
+import { MenuManager } from "@/components/menu/MenuManager";
 import { SimpleDB } from "@/lib/storage/simpledb";
 
 const Index = () => {
