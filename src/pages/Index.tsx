@@ -16,6 +16,7 @@ import { TransactionsPage, type TransactionRecord } from "@/components/transacti
 import { Settings as SettingsPage } from "@/components/settings/Settings";
 import { MenuManager } from "@/components/menu/MenuManager";
 import { SimpleDB } from "@/lib/storage/simpledb";
+import { UserManager } from "@/components/users/UserManager";
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
