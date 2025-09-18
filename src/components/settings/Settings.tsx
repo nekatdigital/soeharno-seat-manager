@@ -135,6 +135,49 @@ export const Settings = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Cadangkan & Pulihkan Data</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">Ekspor seluruh data aplikasi (meja, transaksi, menu, user, dan pengaturan) ke JSON. Impor kembali jika data dihapus oleh browser.</p>
+          <div className="flex flex-wrap gap-2 items-center">
+            <Button type="button" onClick={async () => {
+              const json = await exportBackupJSON();
+              const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `backup-${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              toast({ title: "Backup diunduh" });
+            }}>Ekspor JSON</Button>
+            <Button type="button" variant="outline" onClick={async () => {
+              const json = await exportBackupJSON();
+              await navigator.clipboard.writeText(json);
+              toast({ title: "Backup disalin ke clipboard" });
+            }}>Salin JSON</Button>
+            <label className="inline-flex">
+              <input type="file" accept="application/json" className="hidden" onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const text = await file.text();
+                try {
+                  await importBackupJSON(text);
+                  toast({ title: "Data dipulihkan", description: "Silakan muat ulang halaman jika diperlukan" });
+                } catch (err: any) {
+                  toast({ title: "Gagal impor", description: String(err?.message || err), variant: "destructive" });
+                } finally {
+                  e.currentTarget.value = "";
+                }
+              }} />
+              <Button type="button" variant="secondary" onClick={(e) => (e.currentTarget.previousElementSibling as HTMLInputElement).click()}>Impor JSON</Button>
+            </label>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
