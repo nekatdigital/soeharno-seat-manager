@@ -12,7 +12,9 @@ export interface Table {
   capacity: number;
   status: TableStatus;
   customerName?: string;
-  reservationTime?: string;
+  reservationTime?: string; // HH:mm or "DD/MM/YYYY HH:mm"
+  reservationDate?: string; // DD/MM/YYYY
+  reservationPeople?: number;
   occupiedSince?: string;
 }
 

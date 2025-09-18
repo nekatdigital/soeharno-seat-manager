@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { TableMap, Table, TableStatus } from "@/components/dashboard/TableMap";
+import { TableManager } from "@/components/tables/TableManager";
+import { TableActions } from "@/components/tables/TableActions";
 import { TransactionForm } from "@/components/transactions/TransactionForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import restaurantHero from "@/assets/restaurant-hero.jpg";
 import { BarChart3, Clock, Fish, TrendingUp } from "lucide-react";
+import { TransactionsPage, type TransactionRecord } from "@/components/transactions/TransactionsPage";
+import { Settings as SettingsPage } from "@/components/settings/Settings";
+import { MenuManager } from "@/components/menu/MenuManager";
+import { ReportsPage } from "@/components/reports/ReportsPage";
+import { SimpleDB } from "@/lib/storage/simpledb";
+import { UserManager } from "@/components/users/UserManager";
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -17,10 +25,13 @@ const Index = () => {
   const [username, setUsername] = useState('');
   const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [actionTable, setActionTable] = useState<Table | null>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { toast } = useToast();
 
-  // Demo data
+  // Demo data (akan ditimpa dari IndexedDB jika tersedia)
   const [tables, setTables] = useState<Table[]>([
     { id: '1', number: 1, capacity: 4, status: 'empty' },
     { id: '2', number: 2, capacity: 6, status: 'occupied', customerName: 'Budi Santoso', occupiedSince: '14:30' },
@@ -49,29 +60,82 @@ const Index = () => {
   };
 
   const handleTableClick = (table: Table) => {
-    if (table.status === 'empty') {
-      setSelectedTable(table);
-    } else {
-      toast({
-        title: "Informasi Meja",
-        description: `Meja ${table.number} - ${table.status === 'occupied' ? 'Terisi' : 'Reservasi'} oleh ${table.customerName}`,
-      });
-    }
+    setActionTable(table);
+    setActionsOpen(true);
   };
 
   const handleTransactionComplete = (transaction: any) => {
-    // Update table status to occupied
-    setTables(prev => 
-      prev.map(table => 
-        table.id === selectedTable?.id 
-          ? { ...table, status: 'occupied' as TableStatus, customerName: transaction.customerName, occupiedSince: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }
+    // Update table status to occupied and clear reservation fields
+    setTables(prev =>
+      prev.map(table =>
+        table.id === selectedTable?.id
+          ? {
+              ...table,
+              status: 'occupied' as TableStatus,
+              customerName: transaction.customerName,
+              occupiedSince: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+              reservationDate: undefined,
+              reservationTime: undefined,
+              reservationPeople: undefined,
+            }
           : table
       )
     );
+
+    const record: TransactionRecord = {
+      ...transaction,
+      id: transaction.id || Date.now().toString(),
+      kind: 'dine_in',
+      tableNumber: selectedTable?.number,
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+      paymentMethod: null,
+      operatorRole: userRole,
+    };
+    setTransactions(prev => [record, ...prev]);
+
     setSelectedTable(null);
   };
 
+  useEffect(() => {
+    const db = new SimpleDB("appDB", 1);
+    (async () => {
+      const savedTables = await db.get<Table[]>("tables");
+      if (savedTables && Array.isArray(savedTables)) setTables(savedTables);
+      const savedTx = await db.get<any[]>("transactions");
+      if (savedTx && Array.isArray(savedTx)) setTransactions(savedTx);
+    })();
+  }, []);
+
+  useEffect(() => {
+    const db = new SimpleDB("appDB", 1);
+    db.set("tables", tables).catch(() => void 0);
+  }, [tables]);
+
+  useEffect(() => {
+    const db = new SimpleDB("appDB", 1);
+    db.set("transactions", transactions).catch(() => void 0);
+  }, [transactions]);
+
   const occupiedTables = tables.filter(t => t.status === 'occupied').length;
+
+  const updateTable = (updated: Table) => {
+    setTables(prev => prev.map(t => (t.id === updated.id ? updated : t)));
+  };
+
+  const startTransaction = (t: Table) => {
+    setSelectedTable(t);
+  };
+
+  const finishAndEmpty = (t: Table) => {
+    const cleared: Table = { ...t, status: 'empty' as TableStatus };
+    delete (cleared as any).customerName;
+    delete (cleared as any).reservationDate;
+    delete (cleared as any).reservationTime;
+    delete (cleared as any).reservationPeople;
+    delete (cleared as any).occupiedSince;
+    updateTable(cleared);
+  };
   const totalRevenue = 2450000; // Demo data
   const todayTransactions = 23; // Demo data
 
@@ -155,7 +219,48 @@ const Index = () => {
         return (
           <div className="space-y-6">
             <h1 className="text-3xl font-bold text-deep-water">Manajemen Meja</h1>
+            <TableManager tables={tables} onChange={setTables} />
             <TableMap tables={tables} onTableClick={handleTableClick} />
+          </div>
+        );
+
+      case 'transactions':
+        return (
+          <div className="space-y-6">
+            <TransactionsPage
+              transactions={transactions}
+              onUpdate={(tx) => setTransactions(prev => prev.map(t => t.id === tx.id ? tx : t))}
+              onAdd={(tx) => setTransactions(prev => [{ ...tx, operatorRole: userRole }, ...prev])}
+            />
+          </div>
+        );
+
+      case 'menu':
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-deep-water">Kelola Menu</h1>
+            <MenuManager />
+          </div>
+        );
+
+      case 'reports':
+        return (
+          <ReportsPage transactions={transactions} />
+        );
+
+      case 'users':
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-deep-water">Kelola User</h1>
+            <UserManager />
+          </div>
+        );
+
+      case 'settings':
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-deep-water">Pengaturan</h1>
+            <SettingsPage />
           </div>
         );
 
@@ -183,8 +288,17 @@ const Index = () => {
         {renderContent()}
       </main>
 
+      <TableActions
+        table={actionTable}
+        open={actionsOpen}
+        onOpenChange={setActionsOpen}
+        onUpdate={updateTable}
+        onStartTransaction={startTransaction}
+        onEmpty={finishAndEmpty}
+      />
+
       {selectedTable && (
-        <TransactionForm 
+        <TransactionForm
           table={selectedTable}
           onClose={() => setSelectedTable(null)}
           onComplete={handleTransactionComplete}

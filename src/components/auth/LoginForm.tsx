@@ -20,28 +20,35 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Demo credentials
-    const demoCredentials = {
-      'owner': 'admin123',
-      'staff': 'staff123'
-    };
+    // Try authenticate against stored users first
+    try {
+      const { getUsers } = await import("@/lib/users/storage");
+      const { sha256Hex } = await import("@/lib/users/crypto");
+      const users = await getUsers();
+      const found = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+      if (found) {
+        const hash = await sha256Hex(password);
+        if (hash === found.passwordHash) {
+          toast({ title: "Login berhasil", description: `Selamat datang, ${found.name}!` });
+          onLogin(found.username, found.role);
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch (e) {
+      // ignore and fallback to demo
+    }
 
-    // Simple demo authentication
-    const role = username === 'owner' ? 'owner' : 'staff';
-    const expectedPassword = demoCredentials[role];
+    // Fallback to demo credentials
+    const demoCredentials = { owner: 'admin123', staff: 'staff123' } as const;
+    const demoRole: 'owner' | 'staff' = username === 'owner' ? 'owner' : 'staff';
+    const expected = demoCredentials[demoRole];
 
-    if (password === expectedPassword) {
-      toast({
-        title: "Login berhasil",
-        description: `Selamat datang, ${username}!`,
-      });
-      onLogin(username, role);
+    if (password === expected) {
+      toast({ title: "Login berhasil", description: `Selamat datang, ${username}!` });
+      onLogin(username, demoRole);
     } else {
-      toast({
-        title: "Login gagal",
-        description: "Username atau password salah",
-        variant: "destructive",
-      });
+      toast({ title: "Login gagal", description: "Username atau password salah", variant: "destructive" });
     }
 
     setIsLoading(false);
