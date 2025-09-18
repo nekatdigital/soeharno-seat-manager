@@ -241,6 +241,14 @@ const Index = () => {
           </div>
         );
 
+      case 'users':
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-deep-water">Kelola User</h1>
+            <UserManager />
+          </div>
+        );
+
       case 'settings':
         return (
           <div className="space-y-6">
