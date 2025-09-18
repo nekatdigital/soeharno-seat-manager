@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, UserCircle } from "lucide-react";
 import { TakeawayForm } from "@/components/transactions/TakeawayForm";
 
 export type PaymentMethod = 'cash' | 'qris' | 'transfer' | null;
@@ -27,6 +27,7 @@ export interface TransactionRecord {
   timestamp: string;
   status: TxStatus;
   paymentMethod: PaymentMethod;
+  operatorRole?: 'owner' | 'staff';
 }
 
 interface TransactionsPageProps {
@@ -73,9 +74,16 @@ export const TransactionsPage = ({ transactions, onUpdate, onAdd }: Transactions
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>{t.kind === 'dine_in' ? `Dine-in ${t.tableNumber ? `(Meja ${t.tableNumber})` : ''}` : 'Takeaway'} - {t.customerName}</span>
-                <Badge variant={t.status === 'paid' ? 'default' : 'secondary'}>
-                  {t.status === 'paid' ? 'Lunas' : 'Menunggu' }
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {t.operatorRole && (
+                    <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs bg-green-600 text-white">
+                      <UserCircle className="w-3 h-3" /> {t.operatorRole}
+                    </span>
+                  )}
+                  <Badge variant={t.status === 'paid' ? 'default' : 'secondary'}>
+                    {t.status === 'paid' ? 'Lunas' : 'Menunggu' }
+                  </Badge>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
