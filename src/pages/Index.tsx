@@ -8,6 +8,8 @@ import { TableActions } from "@/components/tables/TableActions";
 import { TransactionForm } from "@/components/transactions/TransactionForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { QrCode, Bell, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import restaurantHero from "@/assets/restaurant-hero.jpg";
