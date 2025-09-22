@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+// @ts-expect-error Vite raw import for text
 import schemaSQL from "@/sql/schema.sql?raw";
 import { exportSQL, exportPsqlScript } from "@/lib/export/sqlExporter";
 import { exportBackupJSON, importBackupJSON } from "@/lib/backup/backup";

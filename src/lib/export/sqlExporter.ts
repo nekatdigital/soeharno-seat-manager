@@ -1,4 +1,5 @@
 import { SimpleDB } from "@/lib/storage/simpledb";
+// @ts-expect-error vite raw import
 import schemaSQL from "@/sql/schema.sql?raw";
 import type { Table } from "@/components/dashboard/TableMap";
 
